@@ -7,9 +7,7 @@ from airflow import models, settings
 from airflow.contrib.auth.backends.password_auth import PasswordUser
 
 
-def add_user(username=os.environ['AIRFLOW_USER'],
-             email=os.environ['AIRFLOW_EMAIL'],
-             password=os.environ['AIRFLOW_PASSWORD']):
+def add_user(username, email, password):
     """Create the admin user
     :param username: airflow admin ui's username
     :param email: email of admin
@@ -32,4 +30,10 @@ def add_user(username=os.environ['AIRFLOW_USER'],
         session.close()
 
 if __name__ == "__main__":
-    add_user()
+    username = os.environ['AIRFLOW_USER']
+
+    add_user(username,
+             os.environ['AIRFLOW_EMAIL'],
+             os.environ['AIRFLOW_PASSWORD'])
+
+    print("Airflow authentication for '{}' added".format(username))
