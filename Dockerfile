@@ -2,7 +2,7 @@ ARG AIRFLOW_VERSION=
 ARG SPARK_VERSION=
 ARG HADOOP_VERSION=
 
-FROM guangie88/spark-custom-addons:${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_hive_pyspark_debian AS base
+FROM guangie88/test-spark-custom-addons:${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_hive_pyspark_debian AS base
 
 # Build matrix configurable values
 ARG SQLALCHEMY_VERSION
