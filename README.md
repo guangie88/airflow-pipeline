@@ -18,19 +18,19 @@ parts:
 ## How to build
 
 ```bash
-AIRFLOW_VERSION=1.9 \
-SPARK_VERSION=2.4.0 \
-HADOOP_VERSION=3.1.0 \
-SQLALCHEMY_VERSION=1.0 \
-PY4J_FILE="$(curl -s https://github.com/apache/spark/tree/v${SPARK_VERSION}/python/lib | grep -oE 'py4j-[^\s]+-src\.zip' | uniq)" \
-SELECTED_PYTHON_MAJOR_VERSION=2 && \
+AIRFLOW_VERSION=1.10
+SPARK_VERSION=2.4.3
+HADOOP_VERSION=3.1.0
+PYTHON_VERSION=3.7
+SQLALCHEMY_VERSION=1.3
+PY4J_FILE="$(curl -s https://github.com/apache/spark/tree/v${SPARK_VERSION}/python/lib | grep -oE 'py4j-[^\s]+-src\.zip' | uniq)"
 docker build . -t airflow-pipeline \
-  --build-arg "AIRFLOW_VERSION=${AIRFLOW_VERSION}" \
-  --build-arg "SPARK_VERSION=${SPARK_VERSION}" \
-  --build-arg "HADOOP_VERSION=${HADOOP_VERSION}" \
-  --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}" \
+  --build-arg AIRFLOW_VERSION=${AIRFLOW_VERSION} \
+  --build-arg SPARK_VERSION=${SPARK_VERSION} \
+  --build-arg HADOOP_VERSION=${HADOOP_VERSION} \
+  --build-arg PYTHON_VERSION=${PYTHON_VERSION} \
   --build-arg "SPARK_PY4J=python/lib/${PY4J_FILE}" \
-  --build-arg "SELECTED_PYTHON_MAJOR_VERSION=${SELECTED_PYTHON_MAJOR_VERSION}"
+  --build-arg SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}
 ```
 
 You may refer to the [vars.yml](templates/vars.yml) to have a sensing of all the
