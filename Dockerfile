@@ -1,8 +1,9 @@
 ARG AIRFLOW_VERSION=
 ARG SPARK_VERSION=
 ARG HADOOP_VERSION=
+ARG PYTHON_VERSION=
 
-FROM guangie88/test-spark-custom-addons:${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_hive_pyspark_debian AS base
+FROM guangie88/spark-custom-addons:${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_python-${PYTHON_VERSION}_hive_pyspark_debian AS base
 
 # Build matrix configurable values
 ARG SQLALCHEMY_VERSION
@@ -10,9 +11,6 @@ ENV SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}
 
 ARG AIRFLOW_VERSION
 ENV AIRFLOW_VERSION=${AIRFLOW_VERSION}
-
-# Default to Python 2.7
-ARG SELECTED_PYTHON_MAJOR_VERSION=2
 
 # Values that are better left with defaults
 
@@ -54,36 +52,20 @@ ENV AIRFLOW_DAG=${AIRFLOW_HOME}/dags
 ENV PYTHONPATH=${SPARK_HOME}/${SPARK_PY4J}:${SPARK_HOME}/python:${AIRFLOW_HOME}/config
 ENV PYSPARK_SUBMIT_ARGS="--py-files ${SPARK_HOME}/python/lib/pyspark.zip pyspark-shell"
 
-# Select default Python version first
-# Airflow script only uses /usr/bin/python, so need to set this symbolic link properly to switch the version
-RUN set -euo pipefail && \
-    unlink /usr/bin/python; \
-    if [ "${SELECTED_PYTHON_MAJOR_VERSION}" = "2" ]; then \
-        PYTHON2_MAJOR_MINOR_VERSION="$(python2 --version 2>&1 | cut -d ' ' -f2 | cut -d '.' -f1,2)"; \
-        ln -s "/usr/bin/python${PYTHON2_MAJOR_MINOR_VERSION}" /usr/bin/python; \
-    elif [ "${SELECTED_PYTHON_MAJOR_VERSION}" = "3" ]; then \
-        PYTHON3_MAJOR_MINOR_VERSION="$(python3 --version 2>&1 | cut -d ' ' -f2 | cut -d '.' -f1,2)"; \
-        ln -s "/usr/bin/python${PYTHON3_MAJOR_MINOR_VERSION}" /usr/bin/python; \
-    else \
-        >&2 echo "SELECTED_PYTHON_MAJOR_VERSION must be either 2 or 3 only"; \
-        return 1; \
-    fi; \
-    :
-
 # Setup airflow
 RUN set -euo pipefail && \
     # Set up Python packages variables
-    if [ "${SELECTED_PYTHON_MAJOR_VERSION}" = "2" ]; then PY_PKG_SUFFIX=""; else PY_PKG_SUFFIX="3"; fi; \
-    PYTHON_PIP_PKG="python${PY_PKG_SUFFIX}-pip"; \
-    PYTHON_SETUPTOOLS_PKG="python${PY_PKG_SUFFIX}-setuptools"; \
-    PYTHON_DEV_PKG="python${PY_PKG_SUFFIX}-dev"; \
+    # if [ "${SELECTED_PYTHON_MAJOR_VERSION}" = "2" ]; then PY_PKG_SUFFIX=""; else PY_PKG_SUFFIX="3"; fi; \
+    # PYTHON_PIP_PKG="python${PY_PKG_SUFFIX}-pip"; \
+    # PYTHON_SETUPTOOLS_PKG="python${PY_PKG_SUFFIX}-setuptools"; \
+    # PYTHON_DEV_PKG="python${PY_PKG_SUFFIX}-dev"; \
     # Apt
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
         # For setup purposes only
         curl \
-        "${PYTHON_PIP_PKG}" \
-        "${PYTHON_SETUPTOOLS_PKG}" \
+        # "${PYTHON_PIP_PKG}" \
+        # "${PYTHON_SETUPTOOLS_PKG}" \
         unzip \
         # Intended packages
         build-essential \
@@ -94,18 +76,24 @@ RUN set -euo pipefail && \
         libkrb5-dev \
         libpq-dev \
         libsasl2-dev \
-        "${PYTHON_DEV_PKG}" \
+        # "${PYTHON_DEV_PKG}" \
         vim-tiny \
         ; \
     rm -rf /var/lib/apt/lists/*; \
+    :
+
+RUN set -euo pipefail && \
     # Update pip
-    python -m pip install --upgrade pip; \
+    # python -m pip install --upgrade pip; \
     # Airflow and SQLAlchemy
     ## These two version numbers can take MAJ.MIN[.PAT]
     AIRFLOW_NORM_VERSION="$(printf "%s.%s" "${AIRFLOW_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     python -m pip install --no-cache-dir "apache-airflow[all]==${AIRFLOW_NORM_VERSION}" psycopg2 flask_bcrypt; \
     SQLALCHEMY_NORM_VERSION="$(printf "%s.%s" "${SQLALCHEMY_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     python -m pip install --no-cache-dir "sqlalchemy==${SQLALCHEMY_NORM_VERSION}"; \
+    :
+
+RUN set -euo pipefail && \
     # Hadoop external installation
     mkdir -p $(dirname "${HADOOP_HOME}"); \
     curl -LO https://archive.apache.org/dist/hadoop/core/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz; \
@@ -140,11 +128,14 @@ RUN set -euo pipefail && \
     cd ${HADOOP_HOME}/share/hadoop/tools/lib; \
     curl -sLO https://downloads.mariadb.com/Connectors/java/connector-java-2.4.0/mariadb-java-client-2.4.0.jar; \
     cd -; \
+    :
+
+RUN set -euo pipefail && \
     # Remove unused apt packages
     DEBIAN_FRONTEND=noninteractive apt-get remove --no-install-recommends -y \
         curl \
-        "${PYTHON_PIP_PKG}" \
-        "${PYTHON_SETUPTOOLS_PKG}" \
+        # "${PYTHON_PIP_PKG}" \
+        # "${PYTHON_SETUPTOOLS_PKG}" \
         unzip \
         ; \
     rm -rf /var/lib/apt/lists/*; \
