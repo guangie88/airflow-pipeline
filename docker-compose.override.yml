@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: fixme
       POSTGRES_PASSWORD: fixme
       POSTGRES_DB: airflow
-      TZ: "Asia/Singapore"
+      # TZ: "Asia/Singapore"
     restart: always
   scheduler:
     depends_on:
@@ -31,7 +31,8 @@ services:
     #     AIRFLOW_SUBPACKAGES: ""
     network_mode: "host"
     volumes:
-      - ./dags:/airflow/dags
+      - ./dags:/airflow/dags:ro
+      - ./airflow.cfg:/airflow/airflow.cfg:ro
       - airflow_logs:/airflow/logs
     environment:
       AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=
@@ -42,6 +43,7 @@ services:
     image: guangie88/airflow-pipeline:1.10_spark-2.4.4_hadoop-3.1.0_python-3.6_sqlalchemy-1.1
     volumes:
       - ./dags:/airflow/dags:ro
+      - ./airflow.cfg:/airflow/airflow.cfg:ro
     # build:
     #   context: .
     #   dockerfile: Dockerfile
