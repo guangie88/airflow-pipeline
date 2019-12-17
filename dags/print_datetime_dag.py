@@ -3,7 +3,7 @@ from airflow.operators.python_operator import PythonOperator
 from datetime import datetime, timedelta
 import pendulum
 
-local_tz = pendulum.timezone("Asia/Singapore")
+local_tz = pendulum.timezone("Asia/Tokyo")
 
 def print_datetime_task(execution_date: datetime, **kwargs):
     local_dt = local_tz.convert(execution_date)
@@ -24,7 +24,7 @@ default_args=dict(
 dag_id = 'print_datetime_dag'
 dag = DAG(dag_id,
           default_args=default_args,
-          schedule_interval="0 1 * * *")  # Every 1am (local)
+          schedule_interval="0 3 * * *")  # Every 3am (local, based on start_date tzinfo)
 
 task_id = 'print_datetime_task'
 task = PythonOperator(

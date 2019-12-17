@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: fixme
       POSTGRES_PASSWORD: fixme
       POSTGRES_DB: airflow
-      # TZ: "Asia/Singapore"
+      TZ: "Europe/Amsterdam"
     restart: always
   scheduler:
     depends_on:
@@ -37,7 +37,7 @@ services:
     environment:
       AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=
       AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@localhost:5999/airflow
-      # TZ: "Asia/Singapore"
+      TZ: "Europe/Amsterdam"  # Doesn't affect DAG trigger / cron
     restart: always
   webserver:
     image: guangie88/airflow-pipeline:1.10_spark-2.4.4_hadoop-3.1.0_python-3.6_sqlalchemy-1.1
@@ -66,7 +66,7 @@ services:
       AIRFLOW_USER: fixme
       AIRFLOW_EMAIL: fixme@fix.me
       AIRFLOW_PASSWORD: fixme
-      # TZ: "Asia/Singapore"
+      TZ: "Europe/Amsterdam"  # Doesn't affect DAG trigger / cron (webserver doesn't do timezone in the first place)
     restart: always
 volumes:
   postgres: {}
